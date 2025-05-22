@@ -1,0 +1,9 @@
+{
+    "editor.hover.enabled": false,
+    "editor.hover.sticky": false,
+    "launch": {
+
+        "editor.autoClosingBrackets": false,
+        "editor.suggestOnTriggerCharacters": false,
+    }
+}

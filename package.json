@@ -3,12 +3,20 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "e2e": "cypress run --browser chrome --headed",
+    "cy:open": "cypress open"
   },
-  "author": "",
+  "keywords": [
+    "lanvo",
+    "package.json",
+    "npm",
+    "init"
+  ],
+  "author": "lanvo lan.vo@leaneo.com",
   "license": "ISC",
-  "description": "",
+  "description": "lanvo package.json",
   "devDependencies": {
-    "cypress": "^9.2.1"
+    "cypress": "^14.4.0",
+    "cypress-mailisk": "^2.0.1"
   }
 }
