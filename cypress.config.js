@@ -6,4 +6,7 @@ module.exports = defineConfig({
     specPattern: "./cypress/e2e/**.*",
     baseUrl: 'http://localhost:8000/'
   },
+  env: {
+    MAILISK_API_KEY: "YOUR_API_KEY",
+  }
 });

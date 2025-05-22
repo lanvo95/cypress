@@ -17,6 +17,7 @@
   "description": "lanvo package.json",
   "devDependencies": {
     "cypress": "^14.4.0",
-    "cypress-mailisk": "^2.0.1"
+    "cypress-mailisk": "^2.0.1",
+    "mailisk": "^2.0.1"
   }
 }
