@@ -29,6 +29,7 @@ describe("change password test", () => {
       expect(email.subject).to.equal("La réception du mail peut prendre quelques minutes. N’hésitez pas à vérifier dans vos spam.");
       resetLink = email.text.match(/.(https:\/\/localhost:8000\/reset_password\/.*)>\n*/)[1];
       expect(resetLink).to.not.be.undefined;
+      
     });
   })
     })

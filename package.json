@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "e2e": "cypress run --browser chrome --headed",
-    "cy:open": "cypress open"
+    "cy:open": "cypress open",
+    "cy:run": "cypress run"
   },
   "keywords": [
     "lanvo",
@@ -16,8 +17,15 @@
   "license": "ISC",
   "description": "lanvo package.json",
   "devDependencies": {
+    "@cypress/vite-dev-server": "^6.0.3",
+    "@vitejs/plugin-react": "^4.5.0",
     "cypress": "^14.4.0",
     "cypress-mailisk": "^2.0.1",
-    "mailisk": "^2.0.1"
+    "mailisk": "^2.0.1",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   }
 }
