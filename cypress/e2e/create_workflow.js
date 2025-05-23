@@ -23,11 +23,12 @@ it('login test', function(){
     cy.get('[class="v-color-picker__color"]').first().click();
     cy.get('#edition-workflow-validate').click();
 
-
-    // Thêm mới Tableau de bord
-    // cy.get('[data-cy="tableau-creation__btn"]', { timeout: 10000 })
-    //     .should('be.visible')
-    //     .click({ force: true });
+    cy.wait(1000);
+    //Thêm mới Tableau de bord
+    cy.get('[data-cy="tableau-creation__btn"]', { timeout: 10000 })
+        .should('be.visible')
+        .click({ force: true });
+    
 
     
 
