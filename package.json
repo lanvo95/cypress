@@ -17,6 +17,7 @@
   "license": "ISC",
   "description": "lanvo package.json",
   "devDependencies": {
+    "@cypress/react": "^9.0.1",
     "@cypress/vite-dev-server": "^6.0.3",
     "@vitejs/plugin-react": "^4.5.0",
     "cypress": "^14.4.0",

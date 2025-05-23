@@ -163,6 +163,11 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
+"@cypress/react@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@cypress/react/-/react-9.0.1.tgz#9402ee74dc659e522e2eb620e6b4eaf188307587"
+  integrity sha512-qu6ziP2smdlfy3Yvrhm6PadxEtkc/cl6YhZu3h6KCtz+0s54joqxp6uGYOglpwyMBp3qjtSil1JVlFX0hUi5LQ==
+
 "@cypress/request@^3.0.8":
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/@cypress/request/-/request-3.0.8.tgz#992f1f42ba03ebb14fa5d97290abe9d015ed0815"
