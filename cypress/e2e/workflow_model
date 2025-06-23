@@ -1,0 +1,217 @@
+import { PREFIX_NAME } from "../../../constants/general";
+
+const accounts = Cypress.config("accounts");
+const urlDefault = "/formulaires";
+const retries = { runMode: 3, openMode: 1 };
+
+const selectors = {
+  workflowName: "input[data-cy=edition-workflow-name]",
+  userColor: "input[data-cy=edition-workflow-user-color]",
+  stepColor: "input[data-cy=edition-workflow-step-color]",
+  colorPicker: "div[data-cy=edition-workflow-color]",
+  workflowForm: "#edition-workflow-form",
+  workflowList: "#edition-workflow-list > div",
+  notification: "div[data-cy=notification] div",
+};
+
+const generateWorkflowNames = () => {
+  const timestamp = Date.now();
+  return {
+    createName: `${PREFIX_NAME} - WF_${timestamp}`,
+    updateName: `${PREFIX_NAME} - WF_2_${timestamp}`,
+    updateNameStep: `${PREFIX_NAME} - SWF_2_${timestamp}`,
+  };
+};
+
+const openWorkflowForm = () => cy.get("#edition-create-workflow").click();
+
+const fillWorkflowForm = ({ name, userColor, stepColor, pickColor } = {}) => {
+  cy.get(selectors.workflowForm).within(() => {
+    if (name) cy.get(selectors.workflowName).clear().type(name).blur();
+    if (userColor) cy.get(selectors.userColor).check({ force: true });
+    if (stepColor) cy.get(selectors.stepColor).check({ force: true });
+    if (pickColor) {
+      cy.get(selectors.userColor).parent().click();
+      cy.get(selectors.colorPicker)
+        .find("div")
+        .first()
+        .find("div")
+        .first()
+        .find("div")
+        .first()
+        .find("div")
+        .first()
+        .click();
+    }
+  });
+};
+
+const validateWorkflowForm = () => cy.get("#edition-workflow-validate").click();
+const assertNotification = (text) =>
+  cy.get(selectors.notification).first().should("contain", text);
+const findWorkflowCard = (name) => cy.contains('DIV[id^="workflow"]', name);
+
+const openWorkflowMenu = (name) => {
+  findWorkflowCard(name)
+    .scrollIntoView()
+    .should("be.visible")
+    .trigger("mouseenter")
+    .last()
+    .click();
+  findWorkflowCard(name).children("#menu-actions").first().click();
+};
+
+const updateWorkflowName = (newName) => {
+  cy.get(selectors.workflowForm).within(() => {
+    cy.get(selectors.workflowName).clear().type(newName).blur();
+  });
+  validateWorkflowForm();
+  assertNotification("Modifié avec succès.");
+};
+
+const deleteWorkflow = (name) => {
+  openWorkflowMenu(name);
+  cy.get("div[data-cy=edition-workflow-list-item-menu]")
+    .children("div[data-cy=remove]")
+    .click();
+  cy.get("div[data-cy=confirm-card]").find("button[data-cy=delete]").click();
+  assertNotification("Supprimé avec succès.");
+};
+
+describe("Test CRUD workflow model", { retries }, () => {
+  Cypress.session.clearAllSavedSessions();
+
+  beforeEach(() => {
+    cy.loginLeaneoV2(
+      accounts.utilisateur.userName,
+      accounts.utilisateur.password
+    );
+    cy.intercept("GET", "/api/v2/permission/get*").as("apiGetPermission");
+    cy.visit(urlDefault);
+    cy.wait("@apiGetPermission");
+  });
+
+  const createAndVerifyWorkflow = ({ name, options }) => {
+    openWorkflowForm();
+    fillWorkflowForm({ name, ...options });
+    validateWorkflowForm();
+    cy.get(selectors.workflowList).should("have.length.greaterThan", 0);
+    cy.get(selectors.workflowForm).should("not.exist");
+    findWorkflowCard(name).should("be.visible");
+  };
+
+  it("should CRUD workflow with user color", () => {
+    const { createName, updateName } = generateWorkflowNames();
+
+    cy.intercept("POST", "/api/v2/workflow/create").as("apiCreateWorkflow");
+    createAndVerifyWorkflow({ name: createName, options: { userColor: true } });
+    cy.wait("@apiCreateWorkflow").its("response.statusCode").should("eq", 201);
+
+    openWorkflowMenu(createName);
+    cy.get("div[data-cy=edition-workflow-list-item-menu]")
+      .children("div[data-cy=properties]")
+      .click();
+    updateWorkflowName(updateName);
+
+    openWorkflowMenu(updateName);
+    cy.get("div[data-cy=edition-workflow-list-item-menu]")
+      .children("div[data-cy=color]")
+      .click();
+    fillWorkflowForm({ pickColor: true });
+    validateWorkflowForm();
+    assertNotification("Modifié avec succès.");
+
+    deleteWorkflow(updateName);
+  });
+
+  it("should CRUD workflow with step color", () => {
+    const { createName, updateName, updateNameStep } = generateWorkflowNames();
+
+    createAndVerifyWorkflow({ name: createName, options: { stepColor: true } });
+
+    const nth = 1;
+    cy.get(`[data-cy="workflow-stepper"] .root:nth-child(${nth})`)
+      .trigger("mouseenter")
+      .get('[data-cy="workflow-stepper"] #menu-actions [data-cy="button-menu"]')
+      .click();
+    cy.get('#inspire  .v-menu__content [data-cy="button-rename"]').click();
+    cy.get("div[data-cy=edition-stepper-color]")
+      .find("div")
+      .first()
+      .find("div")
+      .first()
+      .find("div")
+      .first()
+      .find("div")
+      .first()
+      .click();
+    cy.get(".v-dialog .v-btn")
+      .contains("VALIDER", { matchCase: false })
+      .click();
+
+    openWorkflowMenu(createName);
+    cy.get("div[data-cy=edition-workflow-list-item-menu]")
+      .children("div[data-cy=properties]")
+      .click();
+    updateWorkflowName(updateName);
+
+    openWorkflowMenu(updateName);
+    cy.get("div[data-cy=edition-workflow-list-item-menu]")
+      .children("div[data-cy=color]")
+      .click();
+    cy.get(selectors.stepColor).should("be.checked");
+    cy.get(selectors.userColor).should("not.be.checked");
+    cy.get("#edition-workflow-cancel").click();
+
+    openWorkflowMenu(updateName);
+    cy.get(`[data-cy="workflow-stepper"] .root:nth-child(${nth})`)
+      .trigger("mouseenter", { force: true })
+      .get('[data-cy="workflow-stepper"] #menu-actions [data-cy="button-menu"]')
+      .click();
+    cy.get('#inspire .v-menu__content [data-cy="button-rename"]').click();
+    cy.get("input[data-cy=nom-step]").clear().type(updateNameStep).blur();
+    cy.get(".v-color-picker__swatches > div .v-color-picker__swatch")
+      .eq(1)
+      .children(".v-color-picker__color")
+      .eq(1)
+      .click();
+    cy.get(".v-dialog .v-btn")
+      .contains("VALIDER", { matchCase: false })
+      .click();
+
+    deleteWorkflow(updateName);
+  });
+
+  it("should not allow save without name", () => {
+    openWorkflowForm();
+    fillWorkflowForm({ userColor: true });
+    cy.get("#edition-workflow-validate").should("be.disabled");
+  });
+
+  it("should not allow save without color", () => {
+    openWorkflowForm();
+    cy.get(selectors.userColor).parent().click();
+    cy.get(selectors.colorPicker)
+      .find("div")
+      .first()
+      .find("div")
+      .first()
+      .find("div")
+      .first()
+      .find("div")
+      .first()
+      .click();
+    cy.get("#edition-workflow-validate").should("be.disabled");
+  });
+
+  it("should close workflow dialog", () => {
+    openWorkflowForm();
+    cy.get("#edition-workflow-cancel").click();
+    cy.get(selectors.workflowForm).should("not.exist");
+  });
+
+  after(() => {
+    cy.removeWorkflowByName(`${PREFIX_NAME} - WF_`);
+    cy.removeWorkflowByName(`${PREFIX_NAME} - WF_2_`);
+  });
+});
